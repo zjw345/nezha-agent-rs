@@ -1,162 +1,117 @@
-# 定义一个名为Rust Release的GitHub Actions工作流，用于发布Rust程序
-name: Linux Build
+name: Build nezha-agent-rs for Linux mipsle
 
-# 工作流在push到main分支时触发
 on:
   push:
     branches:
       - "main"
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
 
 jobs:
-  release:
-    name: Release - ${{ matrix.platform.release_for }}
+  build:
+    name: Cross build for ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        platform:
-          - release_for: linux_x86_64_musl
-            os: ubuntu-latest
-            target: x86_64-unknown-linux-musl
-            bin: nezha-agent-rs
-            name: nezha-agent-rs-linux-x86_64.tar.gz
-            command: build
-          - release_for: linux_aarch64_musl
-            os: ubuntu-latest
-            target: aarch64-unknown-linux-musl
-            bin: nezha-agent-rs
-            name: nezha-agent-rs-linux-aarch64.tar.gz
-            command: build
-          - release_for: linux_armeabi_musl
-            os: ubuntu-latest
-            target: arm-unknown-linux-musleabi
-            bin: nezha-agent-rs
-            name: nezha-agent-rs-linux-armeabi.tar.gz
-            command: build
-          - release_for: linux_armeabihf_musl
-            os: ubuntu-latest
-            target: arm-unknown-linux-musleabihf
-            bin: nezha-agent-rs
-            name: nezha-agent-rs-linux-armeabihf.tar.gz
-            command: build
-          - release_for: linux_armv5teeabi_musl
-            os: ubuntu-latest
-            target: armv5te-unknown-linux-musleabi
-          - release_for: linux_armv7eabi_musl
-            os: ubuntu-latest
-            target: armv7-unknown-linux-musleabi
-            bin: nezha-agent-rs
-            name: nezha-agent-rs-linux-armv7eabi.tar.gz
-            command: build
-          - release_for: linux_armv7eabihf_musl
-            os: ubuntu-latest
-            target: armv7-unknown-linux-musleabihf
-            bin: nezha-agent-rs
-            name: nezha-agent-rs-linux-armv7eabihf.tar.gz
-            command: build
-          - release_for: linux_i586_musl
-            os: ubuntu-latest
-            target: i686-unknown-linux-musl
-            bin: nezha-agent-rs
-            name: nezha-agent-rs-linux-i686.tar.gz
-            command: build
-          - release_for: linux_i686_musl
-            os: ubuntu-latest
-            target: i686-unknown-linux-musl
-            bin: nezha-agent-rs
-            name: nezha-agent-rs-linux-i686.tar.gz
-            command: build
-          - release_for: linux_aarch64_gnu
-            os: ubuntu-latest
-            target: aarch64-unknown-linux-gnu
-            bin: nezha-agent-rs
-            name: nezha-agent-rs-linux-aarch64.tar.gz
-            command: build
-          - release_for: linux_armeabi_gnu
-            os: ubuntu-latest
-            target: arm-unknown-linux-gnueabi
-            bin: nezha-agent-rs
-            name: nezha-agent-rs-linux-armeabi.tar.gz
-            command: build
-          - release_for: linux_armeabihf_gnu
-            os: ubuntu-latest
-            target: arm-unknown-linux-gnueabihf
-            bin: nezha-agent-rs
-            name: nezha-agent-rs-linux-armeabihf.tar.gz
-            command: build
-          - release_for: linux_armv5teeabi_gnu
-            os: ubuntu-latest
-            target: armv5te-unknown-linux-gnueabi
-            bin: nezha-agent-rs
-            name: nezha-agent-rs-linux-armv5teeabi.tar.gz
-            command: build
-          - release_for: linux_armv7eabi_gnu
-            os: ubuntu-latest
-            target: armv7-unknown-linux-gnueabi
-            bin: nezha-agent-rs
-            name: nezha-agent-rs-linux-armv7eabi.tar.gz
-            command: build
-          - release_for: linux_armv7eabihf_gnu
-            os: ubuntu-latest
-            target: armv7-unknown-linux-gnueabihf
-            bin: nezha-agent-rs
-            name: nezha-agent-rs-linux-armv7eabihf.tar.gz
-            command: build
-          - release_for: linux_i686_gnu
-            os: ubuntu-latest
-            target: i686-unknown-linux-gnu
-            bin: nezha-agent-rs
-            name: nezha-agent-rs-linux-i686.tar.gz
-            command: build
-          - release_for: linux_powerpc_gnu
-            os: ubuntu-latest
-            target: powerpc-unknown-linux-gnu
-            bin: nezha-agent-rs
-            name: nezha-agent-rs-linux-powerpc.tar.gz
-            command: build
-          - release_for: linux_powerpc64_gnu
-            os: ubuntu-latest
-            target: powerpc64-unknown-linux-gnu
-            bin: nezha-agent-rs
-            name: nezha-agent-rs-linux-powerpc64.tar.gz
-            command: build
-          - release_for: linux_powerpc64le_gnu
-            os: ubuntu-latest
-            target: powerpc64le-unknown-linux-gnu
-            bin: nezha-agent-rs
-            name: nezha-agent-rs-linux-powerpc64le.tar.gz
-            command: build
-          - release_for: linux_riscv64_gnu
-            os: ubuntu-latest
-            target: riscv64gc-unknown-linux-gnu
-            bin: nezha-agent-rs
-            name: nezha-agent-rs-linux-riscv64.tar.gz
-            command: build
-          - release_for: linux_s390x_gnu
-            os: ubuntu-latest
-            target: s390x-unknown-linux-gnu
-            bin: nezha-agent-rs
-            name: nezha-agent-rs-linux-s390x.tar.gz
-            command: build
-          - release_for: linux_x86_64_gnu
-            os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            bin: nezha-agent-rs
-            name: nezha-agent-rs-linux-x86_64.tar.gz
-            command: build
-    runs-on: ${{ matrix.platform.os }}
+        include:
+          - os: ubuntu-latest
+            target: mipsel-unknown-linux-musl
+            exe: nezha-agent-rs
+            cross: true
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Install Lib
-        run: sudo apt update && sudo apt install -y protobuf-compiler musl-tools musl-dev musl
-      - name: Build binary
-        uses: houseabsolute/actions-rust-cross@v0
+      - uses: actions/checkout@v3
+        name: Checkout code
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
         with:
-          command: ${{ matrix.platform.command }}
-          target: ${{ matrix.platform.target }}
-          args: "--locked --release"
-          strip: true
+          profile: minimal
+          toolchain: nightly
+          default: true
+
+      - name: Install dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler musl-tools musl-dev gcc-mipsel-linux-gnu wget
+
+      - name: Download and extract toolchain
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          wget http://musl.cc/mipsel-linux-muslsf-cross.tgz -O mipsel-linux-muslsf-cross.tgz
+          tar xf mipsel-linux-muslsf-cross.tgz -C $HOME
+          echo "$HOME/mipsel-linux-muslsf-cross/bin" >> $GITHUB_PATH
+
+      - name: Verify toolchain
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          if [ ! -x "$(command -v mipsel-linux-muslsf-gcc)" ]; then
+            echo "mipsel-linux-muslsf-gcc not found"
+            exit 1
+          fi
+
+      - name: Configure Rust for cross-compilation
+        if: matrix.cross
+        run: |
+          mkdir -p $HOME/.cargo
+          echo '[target.mipsel-unknown-linux-musl]' > $HOME/.cargo/config.toml
+          echo 'linker = "mipsel-linux-muslsf-gcc"' >> $HOME/.cargo/config.toml
+          echo 'rustflags = ["-C", "target-feature=+crt-static"]' >> $HOME/.cargo/config.toml
+          echo 'runner = "qemu-mipsel-static"' >> $HOME/.cargo/config.toml
+
+      - name: Manually install std for mipsel-unknown-linux-musl
+        run: |
+          wget "https://objects.githubusercontent.com/github-production-release-asset-2e65be/773337668/312ea690-d9fe-4580-9b4b-13bfd9e5c0a9?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=releaseassetproduction%2F20240808%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240808T090826Z&X-Amz-Expires=300&X-Amz-Signature=9d898d512154fe0bf16b5bea7296fff477185ec1979ee3e82eac424f64075667&X-Amz-SignedHeaders=host&actor_id=35001234&key_id=0&repo_id=773337668&response-content-disposition=attachment%3B%20filename%3Dmipsel-unknown-linux-musl.tgz&response-content-type=application%2Foctet-stream" -O mipsel-unknown-linux-musl.tgz
+          tar -xzf mipsel-unknown-linux-musl.tgz
+          ./mipsel-unknown-linux-musl/install.sh --prefix=$(rustc --print sysroot)
+
+      - name: Install cross
+        if: matrix.cross
+        run: |
+          cargo install --version 0.2.5 cross
+          cargo --version
+          cross --version
+
+      - name: Build release
+        if: matrix.cross
+        run: |
+          cross build --release --target ${{ matrix.target }} --no-default-features
+
+      - name: Print build logs
+        if: failure()
+        run: |
+          echo "Printing build logs:"
+          find . -name "*.log" -exec cat {} \; || true
+
+      - name: Run UPX
+        if: matrix.os == 'ubuntu-latest' && matrix.target == 'mipsel-unknown-linux-musl'
+        uses: crazy-max/ghaction-upx@v1
+        with:
+          version: v4.0.2
+          files: target/${{ matrix.target }}/release/${{ matrix.exe }}
+          args: -q --best --lzma
+
       - name: Upload binary
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ matrix.platform.target }}
-          path: target/${{ matrix.platform.target }}/release/${{ matrix.platform.bin }}  
+          name: nezha-agent-rs-${{ matrix.target }}
+          path: target/${{ matrix.target }}/release/${{ matrix.exe }}
+
+      - name: Zip Release
+        uses: TheDoctor0/zip-release@0.6.1
+        with:
+          type: zip
+          filename: nezha-agent-rs-${{ matrix.target }}.zip
+          directory: target/${{ matrix.target }}/release/
+          path: ${{ matrix.exe }}
+
+      - name: Publish
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: target/${{ matrix.target }}/release/nezha-agent-rs-${{ matrix.target }}.zip
+          generate_release_notes: true
+          draft: true
